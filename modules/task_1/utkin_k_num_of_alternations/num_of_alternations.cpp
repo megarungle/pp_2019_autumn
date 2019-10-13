@@ -12,10 +12,11 @@ std::vector<int> getRandomVector(int size) {
     gen.seed(static_cast<unsigned int>(time(0)));
     std::vector<int> vec(size);
     for (int i = 0; i < size; i++) {
-        if (gen() % 2 == 1)
+        if (gen() % 2 == 1) {
             vec[i] = gen() % 100;
-        else
+        } else {
             vec[i] = -1 * (gen() % 100);
+        }
     }
     return vec;
 }
@@ -23,11 +24,13 @@ std::vector<int> getRandomVector(int size) {
 int getSequentialOperations(std::vector<int> vec) {
     int numOfAlt = 0;
     const int size = vec.size();
-    if (size > 1)
+    if (size > 1) {
         for (int i = 1; i < size; ++i) {
-            if (vec[i - 1] * vec[i] < 0)
+            if (vec[i - 1] * vec[i] < 0) {
                 ++numOfAlt;
+            }
         }
+    }
     return numOfAlt;
 }
 
@@ -41,14 +44,14 @@ int getParallelOperations(std::vector<int> globalVec) {
     std::vector<int> localVec(delta + 1);
 
     if (rank == 0) {
-        for (int proc = 1; proc < size; ++proc)
+        for (int proc = 1; proc < size; ++proc) {
             MPI_Send(&globalVec[remain] + proc * delta - 1, delta + 1,
                 MPI_INT, proc, 0, MPI_COMM_WORLD);
+        }
         localVec.resize(delta + remain);
         localVec = std::vector<int>(globalVec.begin(),
             globalVec.begin() + delta + remain);
-    }
-    else {
+    } else {
         MPI_Status status;
         MPI_Recv(&localVec[0], delta + 1, MPI_INT, 0, 0,
             MPI_COMM_WORLD, &status);

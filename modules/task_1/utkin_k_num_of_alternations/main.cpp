@@ -31,8 +31,9 @@ TEST(Num_Of_Alternations, Test_Sequential_Operations_Zeros) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     int sizeVec = 1000;
     std::vector<int> vec(sizeVec);
-    for (int i = 0; i < sizeVec; ++i)
+    for (int i = 0; i < sizeVec; ++i) {
         vec[i] = 0;
+    }
 
     if (rank == 0) {
         int res = getSequentialOperations(vec);
