@@ -38,11 +38,11 @@ int getParallelOperations(std::vector<int> globalVec) {
     const int delta = globalVec.size() / size;
     const int remain = globalVec.size() % size;
 
-    std::vector<int> localVec(delta);
+    std::vector<int> localVec(delta + 1);
 
     if (rank == 0) {
         for (int proc = 1; proc < size; ++proc)
-            MPI_Send(&globalVec[remain] + proc * delta, delta,
+            MPI_Send(&globalVec[remain] + proc * delta - 1, delta + 1,
                 MPI_INT, proc, 0, MPI_COMM_WORLD);
         localVec.resize(delta + remain);
         localVec = std::vector<int>(globalVec.begin(),
@@ -50,7 +50,7 @@ int getParallelOperations(std::vector<int> globalVec) {
     }
     else {
         MPI_Status status;
-        MPI_Recv(&localVec[0], delta, MPI_INT, 0, 0,
+        MPI_Recv(&localVec[0], delta + 1, MPI_INT, 0, 0,
             MPI_COMM_WORLD, &status);
     }
 
