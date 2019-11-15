@@ -41,41 +41,39 @@ std::vector<int> compareSplitMin(int rank1, int rank2,
     if (rank1 == 0) {
         std::vector<int> receivedVec(delta);
         std::vector<int> tmpVec(delta + remain);
-        std::vector<int> lVec(localVec);
 
         MPI_Status status;
-        MPI_Sendrecv(&lVec[0], delta + remain, MPI_INT, rank2,
+        MPI_Sendrecv(&localVec[0], delta + remain, MPI_INT, rank2,
             1, &receivedVec[0], delta, MPI_INT, rank2, 2,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
         while ((i1 < delta + remain) && (i2 < delta) &&
             (cur < delta + remain)) {
-            if (lVec[i1] < receivedVec[i2]) {
-                tmpVec[cur++] = lVec[i1++];
+            if (localVec[i1] < receivedVec[i2]) {
+                tmpVec[cur++] = localVec[i1++];
             } else {
                 tmpVec[cur++] = receivedVec[i2++];
             }
         }
         while (cur < delta + remain) {
-            tmpVec[cur++] = lVec[i1++];
+            tmpVec[cur++] = localVec[i1++];
         }
 
         return tmpVec;
     } else {
         std::vector<int> receivedVec(delta);
         std::vector<int> tmpVec(delta);
-        std::vector<int> lVec(localVec);
 
         MPI_Status status;
-        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 3,
+        MPI_Sendrecv(&localVec[0], delta, MPI_INT, rank2, 3,
             &receivedVec[0], delta, MPI_INT, rank2, 4,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
         while ((i1 < delta) && (i2 < delta) && (cur < delta)) {
-            if (lVec[i1] < receivedVec[i2]) {
-                tmpVec[cur++] = lVec[i1++];
+            if (localVec[i1] < receivedVec[i2]) {
+                tmpVec[cur++] = localVec[i1++];
             } else {
                 tmpVec[cur++] = receivedVec[i2++];
             }
@@ -91,18 +89,17 @@ std::vector<int> compareSplitMax(int rank1, int rank2,
     if (rank2 == 0) {
         std::vector<int> receivedVec(delta + remain);
         std::vector<int> tmpVec(delta);
-        std::vector<int> lVec(localVec);
 
         MPI_Status status;
-        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 2,
+        MPI_Sendrecv(&localVec[0], delta, MPI_INT, rank2, 2,
             &receivedVec[0], delta + remain, MPI_INT, rank2, 1,
             MPI_COMM_WORLD, &status);
 
         int i1 = delta - 1, i2 = delta + remain - 1,
             cur = delta - 1;
         while ((i1 >= 0) && (i2 >= 0) && (cur >= 0)) {
-            if (lVec[i1] > receivedVec[i2]) {
-                tmpVec[cur--] = lVec[i1--];
+            if (localVec[i1] > receivedVec[i2]) {
+                tmpVec[cur--] = localVec[i1--];
             } else {
                 tmpVec[cur--] = receivedVec[i2--];
             }
@@ -112,17 +109,16 @@ std::vector<int> compareSplitMax(int rank1, int rank2,
     } else {
         std::vector<int> receivedVec(delta);
         std::vector<int> tmpVec(delta);
-        std::vector<int> lVec(localVec);
 
         MPI_Status status;
-        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 4,
+        MPI_Sendrecv(&localVec[0], delta, MPI_INT, rank2, 4,
             &receivedVec[0], delta, MPI_INT, rank2, 3,
             MPI_COMM_WORLD, &status);
 
         int i1 = delta - 1, i2 = delta - 1, cur = delta - 1;
         while ((i1 >= 0) && (i2 >= 0) && (cur >= 0)) {
-            if (lVec[i1] > receivedVec[i2]) {
-                tmpVec[cur--] = lVec[i1--];
+            if (localVec[i1] > receivedVec[i2]) {
+                tmpVec[cur--] = localVec[i1--];
             } else {
                 tmpVec[cur--] = receivedVec[i2--];
             }
