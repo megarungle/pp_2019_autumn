@@ -4,8 +4,6 @@
 #include <vector>
 #include <ctime>
 #include "../../../modules/task_2/utkin_k_odd_even_sort/odd_even_sort.h"
-// #include <string>
-// #include <algorithm>
 
 std::vector<int> getRandVec(int size) {
     std::mt19937 gen;
@@ -47,18 +45,19 @@ std::vector<int> compareSplitMin(int rank1, int rank2,
 
         MPI_Status status;
         MPI_Sendrecv(&lVec[0], delta + remain, MPI_INT, rank2,
-            0, &receivedVec[0], delta, MPI_INT, rank2, 0,
+            1, &receivedVec[0], delta, MPI_INT, rank2, 2,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
-        while ((i1 < delta + remain) && (i2 < delta)) {
+        while ((i1 < delta + remain) && (i2 < delta) &&
+            (cur < delta + remain)) {
             if (lVec[i1] < receivedVec[i2]) {
                 tmpVec[cur++] = lVec[i1++];
             } else {
                 tmpVec[cur++] = receivedVec[i2++];
             }
         }
-        while (cur != delta + remain - 1) {
+        while (cur < delta + remain) {
             tmpVec[cur++] = lVec[i1++];
         }
 
@@ -69,8 +68,8 @@ std::vector<int> compareSplitMin(int rank1, int rank2,
         std::vector<int> lVec(localVec);
 
         MPI_Status status;
-        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 0,
-            &receivedVec[0], delta, MPI_INT, rank2, 0,
+        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 3,
+            &receivedVec[0], delta, MPI_INT, rank2, 4,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
@@ -95,16 +94,17 @@ std::vector<int> compareSplitMax(int rank1, int rank2,
         std::vector<int> lVec(localVec);
 
         MPI_Status status;
-        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank1, 0,
-            &receivedVec[0], delta + remain, MPI_INT, rank1, 0,
+        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 2,
+            &receivedVec[0], delta + remain, MPI_INT, rank2, 1,
             MPI_COMM_WORLD, &status);
 
-        int i1 = 0, i2 = 0, cur = 0;
-        while ((i1 < delta) && (i2 < delta + remain) && (cur < delta)) {
-            if (lVec[i1] < receivedVec[i2]) {
-                tmpVec[cur++] = lVec[i1++];
+        int i1 = delta - 1, i2 = delta + remain - 1,
+            cur = delta - 1;
+        while ((i1 >= 0) && (i2 >= 0) && (cur >= 0)) {
+            if (lVec[i1] > receivedVec[i2]) {
+                tmpVec[cur--] = lVec[i1--];
             } else {
-                tmpVec[cur++] = receivedVec[i2++];
+                tmpVec[cur--] = receivedVec[i2--];
             }
         }
 
@@ -115,16 +115,16 @@ std::vector<int> compareSplitMax(int rank1, int rank2,
         std::vector<int> lVec(localVec);
 
         MPI_Status status;
-        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank1, 0,
-            &receivedVec[0], delta, MPI_INT, rank1, 0,
+        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 4,
+            &receivedVec[0], delta, MPI_INT, rank2, 3,
             MPI_COMM_WORLD, &status);
 
-        int i1 = 0, i2 = 0, cur = 0;
-        while ((i1 < delta) && (i2 < delta) && (cur < delta)) {
-            if (lVec[i1] < receivedVec[i2]) {
-                tmpVec[cur++] = lVec[i1++];
+        int i1 = delta - 1, i2 = delta - 1, cur = delta - 1;
+        while ((i1 >= 0) && (i2 >= 0) && (cur >= 0)) {
+            if (lVec[i1] > receivedVec[i2]) {
+                tmpVec[cur--] = lVec[i1--];
             } else {
-                tmpVec[cur++] = receivedVec[i2++];
+                tmpVec[cur--] = receivedVec[i2--];
             }
         }
 
@@ -143,11 +143,10 @@ std::vector<int> parSort(const std::vector<int>& globalVec) {
 
     std::vector<int> localVec(delta);
 
-    MPI_Scatter(&resVec[remain], delta, MPI_INT,
+    MPI_Scatter(&resVec[0], delta, MPI_INT,
         &localVec[0], delta, MPI_INT, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
-        localVec.resize(delta + remain);
         for (int ir = 0; ir < remain; ++ir) {
             localVec.push_back(resVec[delta * size + ir]);
         }
@@ -181,14 +180,14 @@ std::vector<int> parSort(const std::vector<int>& globalVec) {
         }
     }
     if (rank != 0) {
-        MPI_Send(&localVec[0], delta, MPI_INT, 0, 0,
+        MPI_Send(&localVec[0], delta, MPI_INT, 0, 5,
             MPI_COMM_WORLD);
     } else {
         resVec = localVec;
         std::vector<int> tmpVec(delta);
         MPI_Status status;
         for (int proc = 1; proc < size; ++proc) {
-            MPI_Recv(&tmpVec[0], delta, MPI_INT, proc, 0,
+            MPI_Recv(&tmpVec[0], delta, MPI_INT, proc, 5,
                 MPI_COMM_WORLD, &status);
             resVec.insert(resVec.end(), tmpVec.begin(),
                 tmpVec.end());
