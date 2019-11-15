@@ -2,9 +2,9 @@
 #include <mpi.h>
 #include <random>
 #include <vector>
+#include <ctime>
 #include "../../../modules/task_2/utkin_k_odd_even_sort/odd_even_sort.h"
 // #include <string>
-// #include <ctime>
 // #include <algorithm>
 
 std::vector<int> getRandVec(int size) {
@@ -45,11 +45,9 @@ std::vector<int> compareSplitMin(int rank1, int rank2,
         std::vector<int> tmpVec(delta + remain);
         std::vector<int> lVec(localVec);
 
-        // Sendrecv (alternative)
-        MPI_Send(&lVec[0], delta + remain, MPI_INT, rank2, 0,
-            MPI_COMM_WORLD);
         MPI_Status status;
-        MPI_Recv(&receivedVec[0], delta, MPI_INT, rank2, 0,
+        MPI_Sendrecv(&lVec[0], delta + remain, MPI_INT, rank2,
+            0, &receivedVec[0], delta, MPI_INT, rank2, 0,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
@@ -70,11 +68,9 @@ std::vector<int> compareSplitMin(int rank1, int rank2,
         std::vector<int> tmpVec(delta);
         std::vector<int> lVec(localVec);
 
-        // Sendrecv (alternative)
-        MPI_Send(&lVec[0], delta, MPI_INT, rank2, 0,
-            MPI_COMM_WORLD);
         MPI_Status status;
-        MPI_Recv(&receivedVec[0], delta, MPI_INT, rank2, 0,
+        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank2, 0,
+            &receivedVec[0], delta, MPI_INT, rank2, 0,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
@@ -98,11 +94,9 @@ std::vector<int> compareSplitMax(int rank1, int rank2,
         std::vector<int> tmpVec(delta);
         std::vector<int> lVec(localVec);
 
-        // Sendrecv (alternative)
-        MPI_Send(&lVec[0], delta, MPI_INT, rank1, 0,
-            MPI_COMM_WORLD);
         MPI_Status status;
-        MPI_Recv(&receivedVec[0], delta + remain, MPI_INT, rank1, 0,
+        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank1, 0,
+            &receivedVec[0], delta + remain, MPI_INT, rank1, 0,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
@@ -120,11 +114,9 @@ std::vector<int> compareSplitMax(int rank1, int rank2,
         std::vector<int> tmpVec(delta);
         std::vector<int> lVec(localVec);
 
-        // Sendrecv (alternative)
-        MPI_Send(&lVec[0], delta, MPI_INT, rank1, 0,
-            MPI_COMM_WORLD);
         MPI_Status status;
-        MPI_Recv(&receivedVec[0], delta, MPI_INT, rank1, 0,
+        MPI_Sendrecv(&lVec[0], delta, MPI_INT, rank1, 0,
+            &receivedVec[0], delta, MPI_INT, rank1, 0,
             MPI_COMM_WORLD, &status);
 
         int i1 = 0, i2 = 0, cur = 0;
@@ -195,7 +187,7 @@ std::vector<int> parSort(const std::vector<int>& globalVec) {
         resVec = localVec;
         std::vector<int> tmpVec(delta);
         MPI_Status status;
-        for (int proc = 1; proc < size; ++i) {
+        for (int proc = 1; proc < size; ++proc) {
             MPI_Recv(&tmpVec[0], delta, MPI_INT, proc, 0,
                 MPI_COMM_WORLD, &status);
             resVec.insert(resVec.end(), tmpVec.begin(),
