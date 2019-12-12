@@ -4,7 +4,7 @@
 #include <vector>
 #include <ctime>
 #include <algorithm>
-#include <iostream>
+#include <utility>
 #include "../../../modules/task_3/utkin_k_odd_even_merge_radix/odd_even_merge_radix.h"
 
 std::vector<pair> comps;  // array of comparators
@@ -162,4 +162,95 @@ void buildConnection(std::vector<int> upPrcsVec,
     for (int i = 1; i + 1 < sizeUp + sizeDown; i += 2) {
         comps.push_back(pair{ prcsRes[i], prcsRes[i + 1]} );
     }
+}
+
+std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
+    int globalSize = globalVec.size();
+    
+    int size, rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if (size <= 0) {
+        throw -1;
+    }
+
+    if (size == 1 || size >= globalSize) {
+        return radixSort(globalVec);
+    }
+
+    int localSize = globalSize / size;
+    if (globalSize % size != 0) {
+        localSize += size - (globalSize % size);
+    }
+
+    std::vector<double> localVec(localSize);
+    std::vector<double> recVec(localSize);
+    std::vector<double> tmpVec(localSize);
+
+    MPI_Scatter(&globalVec[0], localSize, MPI_DOUBLE,
+        &localVec[0], localSize, MPI_DOUBLE, 0,
+        MPI_COMM_WORLD);
+
+    localVec = radixSort(localVec);
+
+    int compsSize = comps.size();
+    
+    // odd even batcher merge
+    for (int i = 0; i < compsSize; ++i) {
+        pair comp = comps[i];
+        MPI_Status st;
+
+        if (rank == comp.rank1) {
+            MPI_Send(&localVec[0], localSize, MPI_DOUBLE,
+                comp.rank2, 0, MPI_COMM_WORLD);
+            MPI_Recv(&recVec[0], localSize, MPI_DOUBLE,
+                comp.rank2, 0, MPI_COMM_WORLD, &st);
+
+            for (int locIndex = 0, recIndex = 0, tmpIndex = 0;
+                tmpIndex < localSize; ++tmpIndex) {
+                double local = localVec[locIndex];
+                double rec = recVec[recIndex];
+                if (local < rec) {
+                    tmpVec[tmpIndex] = local;
+                    ++locIndex;
+                } else {
+                    tmpVec[tmpIndex] = rec;
+                    ++tmpIndex;
+                }
+            }
+            std::swap(localVec, tmpVec);
+        } else if (rank == comp.rank2) {
+            MPI_Recv(&recVec[0], localSize, MPI_DOUBLE,
+                comp.rank1, 0, MPI_COMM_WORLD, &st);
+            MPI_Send(&localVec[0], localSize, MPI_DOUBLE,
+                comp.rank1, 0, MPI_COMM_WORLD);
+
+            int startIndex = localSize - 1;
+            for (int locIndex = startIndex, recIndex = startIndex,
+                tmpIndex = startIndex; tmpIndex >= 0; --tmpIndex) {
+                double local = localVec[locIndex];
+                double rec = recVec[recIndex];
+                if (local > rec) {
+                    tmpVec[tmpIndex] = local;
+                    --locIndex;
+                } else {
+                    tmpVec[tmpIndex] = rec;
+                    --recIndex;
+                }
+            }
+            std::swap(localVec, tmpVec);
+        }
+    }
+    MPI_Gather(&localVec[0], localSize, MPI_DOUBLE,
+        &globalVec[0], localSize, MPI_DOUBLE, 0,
+        MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        for (int i = 0; i < size - (globalSize % size); ++i) {
+            globalVec.pop_back();
+        }
+    }
+
+    return globalVec;
 }

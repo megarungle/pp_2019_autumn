@@ -20,4 +20,6 @@ void buildNetwork(std::vector<int> prcsVec);
 void buildConnection(std::vector<int> upPrcsVec,
     std::vector<int> downPrcsVec);
 
+std::vector<double> parOddEvenMerge(std::vector<double> globalVec);
+
 #endif  // MODULES_TASK_3_UTKIN_K_ODD_EVEN_MERGE_RADIX_ODD_EVEN_MERGE_RADIX_H_
