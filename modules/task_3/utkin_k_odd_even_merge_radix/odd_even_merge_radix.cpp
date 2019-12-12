@@ -99,14 +99,14 @@ void batcher(int countOfProc) {
 
 void buildNetwork(std::vector<int> prcsVec) {
     int size = prcsVec.size();
-    
+
     if (size == 1) {
         return;
     }
 
     std::vector<int> upPrcsVec(size / 2);
     std::copy(prcsVec.begin(), prcsVec.begin() + size / 2, upPrcsVec.begin());
-    
+
     std::vector<int> downPrcsVec((size / 2) + (size % 2));
     std::copy(prcsVec.begin() + size / 2, prcsVec.end(), downPrcsVec.begin());
 
@@ -160,7 +160,7 @@ void buildConnection(std::vector<int> upPrcsVec,
         prcsRes.begin());
 
     for (int i = 1; i + 1 < sizeUp + sizeDown; i += 2) {
-        comps.push_back(pair{ prcsRes[i], prcsRes[i + 1]} );
+        comps.push_back(pair{ prcsRes[i], prcsRes[i + 1]});
     }
 }
 
