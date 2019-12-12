@@ -8,7 +8,7 @@
 std::vector<double> getRandVec(int size) {
     std::mt19937 gen(time(0));
     std::uniform_real_distribution<> urd(0, 55);
-    
+
     std::vector<double> vec(size);
 
     for (int i = 0; i < size; ++i) {
@@ -18,8 +18,8 @@ std::vector<double> getRandVec(int size) {
     return vec;
 }
 
-std::vector<double> sortingByCounting(std::vector<double>& vec1,
-    std::vector<double>& vec2, int byteNum) {
+std::vector<double> sortingByCounting(std::vector<double> vec1,
+    std::vector<double> vec2, int byteNum) {
     if (vec1.size() != vec2.size()) {
         throw -1;
     }
@@ -29,7 +29,7 @@ std::vector<double> sortingByCounting(std::vector<double>& vec1,
     // byte reading
     unsigned char* byteArr = (unsigned char*)vec1.data();
 
-    int iOffset = 0; // offset for indices
+    int iOffset = 0;  // offset for indices
     int counter[256] = { 0 };
 
     for (int i = 0; i < size; ++i) {
@@ -64,7 +64,7 @@ std::vector<double> sortingByCounting(std::vector<double>& vec1,
     return vec2;
 }
 
-std::vector<double> radixSort(std::vector<double>& vec) {
+std::vector<double> radixSort(std::vector<double> vec) {
     std::vector<double> tmp(vec.size());
 
     // sorting by each byte (least significant digit)
