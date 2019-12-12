@@ -3,7 +3,11 @@
 #include <random>
 #include <vector>
 #include <ctime>
+#include <algorithm>
+#include <iostream>
 #include "../../../modules/task_3/utkin_k_odd_even_merge_radix/odd_even_merge_radix.h"
+
+std::vector<pair> comps;  // array of comparators
 
 std::vector<double> getRandVec(int size) {
     std::mt19937 gen(time(0));
@@ -81,4 +85,81 @@ std::vector<double> radixSort(std::vector<double> vec) {
     // the last byte must be sorted differently
 
     return vec;
+}
+
+void batcher(int countOfProc) {
+    std::vector<int> prcsVec(countOfProc);
+
+    for (int i = 0; i < countOfProc; ++i) {
+        prcsVec[i] = i;
+    }
+
+    buildNetwork(prcsVec);
+}
+
+void buildNetwork(std::vector<int> prcsVec) {
+    int size = prcsVec.size();
+    
+    if (size == 1) {
+        return;
+    }
+
+    std::vector<int> upPrcsVec(size / 2);
+    std::copy(prcsVec.begin(), prcsVec.begin() + size / 2, upPrcsVec.begin());
+    
+    std::vector<int> downPrcsVec((size / 2) + (size % 2));
+    std::copy(prcsVec.begin() + size / 2, prcsVec.end(), downPrcsVec.begin());
+
+    buildNetwork(upPrcsVec);
+    buildNetwork(downPrcsVec);
+    buildConnection(upPrcsVec, downPrcsVec);
+}
+
+void buildConnection(std::vector<int> upPrcsVec,
+    std::vector<int> downPrcsVec) {
+    int countPrcs = upPrcsVec.size() + downPrcsVec.size();
+
+    if (countPrcs == 1) {
+        return;
+    } else if (countPrcs == 2) {
+        comps.push_back(pair{ upPrcsVec[0], downPrcsVec[0] });
+        return;
+    }
+
+    int sizeUp = upPrcsVec.size();
+    int sizeDown = downPrcsVec.size();
+
+    std::vector<int> upPrcsVecOdd;
+    std::vector<int> upPrcsVecEven;
+    std::vector<int> downPrcsVecOdd;
+    std::vector<int> downPrcsVecEven;
+
+    std::vector<int> prcsRes(countPrcs);
+
+    for (int i = 0; i < sizeUp; ++i) {
+        if (i % 2) {
+            upPrcsVecEven.push_back(upPrcsVec[i]);
+        } else {
+            upPrcsVecOdd.push_back(upPrcsVec[i]);
+        }
+    }
+
+    for (int i = 0; i < sizeDown; ++i) {
+        if (i % 2) {
+            downPrcsVecEven.push_back(downPrcsVec[i]);
+        } else {
+            downPrcsVecOdd.push_back(downPrcsVec[i]);
+        }
+    }
+
+    buildConnection(upPrcsVecOdd, downPrcsVecOdd);
+    buildConnection(upPrcsVecEven, downPrcsVecEven);
+
+    std::merge(upPrcsVec.begin(), upPrcsVec.end(),
+        downPrcsVec.begin(), downPrcsVec.end(),
+        prcsRes.begin());
+
+    for (int i = 1; i + 1 < sizeUp + sizeDown; i += 2) {
+        comps.push_back(pair{ prcsRes[i], prcsRes[i + 1]} );
+    }
 }
