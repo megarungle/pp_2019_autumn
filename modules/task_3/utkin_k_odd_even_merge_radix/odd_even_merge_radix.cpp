@@ -184,6 +184,10 @@ std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
         localSize += size - (globalSize % size);
     }
 
+    for (int i = 0; i < size - (globalSize % size); ++i) {
+        globalVec.push_back(0.0);
+    }
+
     std::vector<double> localVec(localSize);
     std::vector<double> recVec(localSize);
     std::vector<double> tmpVec(localSize);
