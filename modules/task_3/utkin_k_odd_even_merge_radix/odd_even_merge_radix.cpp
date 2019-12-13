@@ -179,14 +179,16 @@ std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
         return radixSort(globalVec);
     }
 
-    int localSize = globalSize / size;
+    int globalNewSize = globalSize;
     if (globalSize % size != 0) {
-        localSize += size - (globalSize % size);
+        globalNewSize += size - (globalSize % size);
+        for (int i = 0; i < size - (globalSize % size); ++i) {
+            globalVec.push_back(0.0);
+        }
     }
+    int localSize = globalNewSize / size;
 
-    for (int i = 0; i < size - (globalSize % size); ++i) {
-        globalVec.push_back(0.0);
-    }
+    batcher(size);
 
     std::vector<double> localVec(localSize);
     std::vector<double> recVec(localSize);
@@ -220,7 +222,7 @@ std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
                     ++locIndex;
                 } else {
                     tmpVec[tmpIndex] = rec;
-                    ++tmpIndex;
+                    ++recIndex;
                 }
             }
             std::swap(localVec, tmpVec);
@@ -250,7 +252,7 @@ std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
         &globalVec[0], localSize, MPI_DOUBLE, 0,
         MPI_COMM_WORLD);
 
-    if (rank == 0) {
+    if (rank == 0 && globalNewSize != globalSize) {
         for (int i = 0; i < size - (globalSize % size); ++i) {
             globalVec.pop_back();
         }
