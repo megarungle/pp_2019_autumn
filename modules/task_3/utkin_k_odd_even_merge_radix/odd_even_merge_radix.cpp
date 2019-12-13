@@ -166,7 +166,7 @@ void buildConnection(std::vector<int> upPrcsVec,
 
 std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
     int globalSize = globalVec.size();
-    
+
     int size, rank;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -183,7 +183,7 @@ std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
     if (globalSize % size != 0) {
         globalNewSize += size - (globalSize % size);
         for (int i = 0; i < size - (globalSize % size); ++i) {
-            globalVec.push_back(0.0);
+            globalVec.push_back(60.0);
         }
     }
     int localSize = globalNewSize / size;
@@ -201,7 +201,7 @@ std::vector<double> parOddEvenMerge(std::vector<double> globalVec) {
     localVec = radixSort(localVec);
 
     int compsSize = comps.size();
-    
+
     // odd even batcher merge
     for (int i = 0; i < compsSize; ++i) {
         pair comp = comps[i];
